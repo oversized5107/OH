@@ -1,0 +1,15 @@
+GeoSite
+    cn
+    apple-cn
+    icloud
+    google-cn
+    tld-cn
+    category-games@cn
+    gfw
+    greatfire
+    geolocation-!cn
+    category-ads-all
+
+GeoIP
+    cn
+    private

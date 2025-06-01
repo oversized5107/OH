@@ -1,0 +1,57 @@
+plugins:
+  ################## 数据源 ################
+  - tag: geoip_private # 私网 ip
+    type: ip_set
+    args:
+      files:
+        - "/var/mosdns/geoip_private.txt"
+
+  - tag: geoip_cn # cn ip
+    type: ip_set
+    args:
+      files:
+        - "/var/mosdns/geoip_cn.txt"
+  ####################################################################################
+  - tag: geosite_cn # cn 域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_apple-cn.txt"
+        - "/var/mosdns/geosite_category-games@cn.txt"
+        - "/var/mosdns/geosite_cn.txt"
+        - "/var/mosdns/geosite_google-cn.txt"
+        - "/var/mosdns/geosite_icloud.txt"
+        - "/var/mosdns/geosite_tld-cn.txt"
+        - "/etc/mosdns/rule/whitelist.txt"
+
+  - tag: geosite_global # gfw 域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_gfw.txt"
+        - "/var/mosdns/geosite_greatfire.txt"
+        - "/etc/mosdns/rule/greylist.txt"
+
+  - tag: geosite_location-!cn # 非 cn 域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_geolocation-!cn.txt"
+        
+  - tag: ddns   # ddns 域名
+    type: domain_set
+    args:
+      files:
+        - "/etc/mosdns/rule/ddnslist.txt"
+
+  - tag: hosts  # hosts 域名
+    type: hosts
+    args:
+      files:
+        - "/etc/mosdns/rule/hosts.txt"
+
+  - tag: geosite_ads-all # 广告域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_category-ads-all.txt"
