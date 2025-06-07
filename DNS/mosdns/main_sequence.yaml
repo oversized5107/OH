@@ -1,6 +1,11 @@
 plugins:
   ####################################################################################
   ###############输出日志，dns查询###################
+  - tag: dns_near_seq
+    type: sequence
+    args:
+      - exec: query_summary dns_near
+      - exec: $dns_near
   - tag: dns_cn_seq
     type: sequence
     args:
@@ -11,17 +16,27 @@ plugins:
     args:
       - exec: query_summary dns_global
       - exec: $dns_global
-  - tag: dns_nocn_seq
-    type: sequence
-    args:
-      - exec: query_summary dns_nocn
-      - exec: $dns_nocn
-  - tag: fallback_seq # 其他特殊情况统一使用 dns_cn 处理
+  - tag: fallback_seq # 其他特殊情况统一使用 dns_global 处理
     type: sequence
     args:
       - exec: query_summary dns_fallback
       - exec: $dns_global
   ##################################################
+  # query global_first 域名
+  - tag: query_global_first
+    type: sequence
+    args:
+      - exec: $no_ecs
+      - exec: $dns_global_seq
+      - matches: "resp_ip $geoip_cn" # 响应为 cn ip
+        exec: drop_resp # 丢弃
+  # query near 域名
+  - tag: query_near
+    type: sequence
+    args:
+      - exec: $dns_near_seq
+      - matches: "!resp_ip $geoip_cn" # 响应非 cn ip
+        exec: drop_resp # 丢弃
   # query cn 域名
   - tag: query_cn
     type: sequence
@@ -36,14 +51,6 @@ plugins:
     args:
       - exec: $no_ecs
       - exec: $dns_global_seq
-      - matches: "resp_ip $geoip_cn" # 响应为 cn ip
-        exec: drop_resp # 丢弃
-  # query nocn 域名
-  - tag: query_nocn
-    type: sequence
-    args:
-      - exec: $no_ecs
-      - exec: $dns_nocn_seq
       - matches: "resp_ip $geoip_cn" # 响应为 cn ip
         exec: drop_resp # 丢弃
   # query fallback
@@ -69,11 +76,21 @@ plugins:
   - tag: main_sequence
     type: sequence
     args:
+      - matches: qname $blocklist
+        exec: $reject_3
       - exec: prefer_ipv4
 
       # 动态域名跳过缓存
       - matches: "!qname $ddns"
         exec: $cache_wan
+      - exec: jump has_resp_main
+
+      - matches: qname $geosite_global_first
+        exec: $query_global_first
+      - exec: jump has_resp_main
+      
+      - matches: qname $geosite_near_cn
+        exec: $query_near
       - exec: jump has_resp_main
 
       - matches: qname $geosite_cn
@@ -82,10 +99,6 @@ plugins:
 
       - matches: qname $geosite_global
         exec: $dns_global
-      - exec: jump has_resp_main
-
-      - matches: qname $geosite_location-!cn # 非 cn 域名
-        exec: $query_nocn
       - exec: jump has_resp_main
 
       # 其他

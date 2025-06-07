@@ -1,5 +1,12 @@
 plugins:
   ##################################################
+  - tag: near
+    type: forward
+    args:
+      concurrent: 2
+      upstreams:
+        - addr: "udp://******"
+
   - tag: ali
     type: forward
     args:
@@ -92,6 +99,14 @@ plugins:
           enable_pipeline: true
 
   ##################################################
+  - tag: dns_near
+    type: "fallback"
+    args:
+      primary: near
+      secondary: ali
+      threshold: 500
+      always_standby: true # 副可执行插件始终待命
+
   # dns-cn 序列
   - tag: dns_cn
     type: "fallback"
@@ -109,7 +124,7 @@ plugins:
       threshold: 500
       always_standby: true # 副可执行插件始终待命
 
-  - tag: dns_nocn
+  - tag: dns_other
     type: "fallback"
     args:
       primary: adguard

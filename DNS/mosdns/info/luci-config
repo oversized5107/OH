@@ -1,14 +1,34 @@
 GeoSite
-    cn
-    apple-cn
-    icloud
-    google-cn
-    tld-cn
-    category-games@cn
-    gfw
-    greatfire
-    geolocation-!cn
-    category-ads-all
+% 以下使用国外dns
+alibaba@!cn
+bytedance@!cn
+bilibili@!cn
+jd@!cn
+icloud@!cn
+
+% 以下使用运营商dns
+category-entertainment-cn
+category-games@cn
+category-speedtest@cn
+category-scholar-cn
+alibaba
+bytedance
+jd
+icloud
+
+% 以下使用公共dns
+apple-cn
+google-cn
+tld-cn
+cn
+
+% 以下使用国外dns
+category-scholar-!cn
+gfw
+geolocation-!cn
+geolocation-cn@!cn
+
+category-ads-all
 
 GeoIP
     cn

@@ -12,31 +12,54 @@ plugins:
       files:
         - "/var/mosdns/geoip_cn.txt"
   ####################################################################################
+  - tag: blocklist
+    type: domain_set
+    args:
+      files:
+        - "/etc/mosdns/rule/blocklist.txt"
+  
+  - tag: geosite_global_first
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_alibaba@!cn.txt"
+        - "/var/mosdns/geosite_bytedance@!cn.txt"
+        - "/var/mosdns/geosite_bilibili@!cn.txt"
+        - "/var/mosdns/geosite_jd@!cn.txt"
+        - "/var/mosdns/geosite_icloud@!cn.txt"
+  
+  - tag: geosite_near_cn
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_category-entertainment-cn.txt"
+        - "/var/mosdns/geosite_category-games@cn.txt"
+        - "/var/mosdns/geosite_category-speedtest@cn.txt"
+        - "/var/mosdns/geosite_category-scholar-cn.txt"
+        - "/var/mosdns/geosite_alibaba.txt"
+        - "/var/mosdns/geosite_bytedance.txt"
+        - "/var/mosdns/geosite_jd.txt"
+        - "/var/mosdns/geosite_icloud.txt"
+
   - tag: geosite_cn # cn 域名
     type: domain_set
     args:
       files:
         - "/var/mosdns/geosite_apple-cn.txt"
-        - "/var/mosdns/geosite_category-games@cn.txt"
-        - "/var/mosdns/geosite_cn.txt"
         - "/var/mosdns/geosite_google-cn.txt"
-        - "/var/mosdns/geosite_icloud.txt"
         - "/var/mosdns/geosite_tld-cn.txt"
+        - "/var/mosdns/geosite_cn.txt"
         - "/etc/mosdns/rule/whitelist.txt"
 
   - tag: geosite_global # gfw 域名
     type: domain_set
     args:
       files:
+        - "/var/mosdns/geosite_category-scholar-!cn.txt"
         - "/var/mosdns/geosite_gfw.txt"
-        - "/var/mosdns/geosite_greatfire.txt"
-        - "/etc/mosdns/rule/greylist.txt"
-
-  - tag: geosite_location-!cn # 非 cn 域名
-    type: domain_set
-    args:
-      files:
         - "/var/mosdns/geosite_geolocation-!cn.txt"
+        - "/var/mosdns/geosite_geolocation-cn@!cn.txt"
+        - "/etc/mosdns/rule/greylist.txt"
         
   - tag: ddns   # ddns 域名
     type: domain_set
