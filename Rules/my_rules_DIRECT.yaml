@@ -1,5 +1,7 @@
 payload:
 # ua3f
+  - PROCESS-NAME,subs-check.exe
+  - PROCESS-NAME,subs-check
 # --------------------------------------------------------------------------------------#
   - DOMAIN,clash.razord.top
   - DOMAIN,yacd.haishan.me

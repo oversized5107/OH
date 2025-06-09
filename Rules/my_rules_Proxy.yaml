@@ -5,4 +5,7 @@ payload:
   - DOMAIN-SUFFIX,githubusercontent.com
   - DOMAIN-SUFFIX,ipleak.net
   - DOMAIN-SUFFIX,arxiv.org
+  - DOMAIN-SUFFIX,deepl.com
+  - DOMAIN-SUFFIX,doi.org
   - DOMAIN-SUFFIX,mdpi.com
+  - DOMAIN-SUFFIX,semanticscholar.org
