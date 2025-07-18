@@ -1,0 +1,20 @@
+payload:
+  # DPI 防检测
+  # === DPI防检测, 加密常用端口 ===
+  - DST-PORT,53
+  - DST-PORT,80
+  - DST-PORT,8000
+  - DST-PORT,8001
+  - DST-PORT,8080
+
+  # === DPI防检测, 加密IM和推送服务端口 ===
+  - DST-PORT,5222  # XMPP/Google Talk/WhatsApp
+  - DST-PORT,5223  # Apple推送通知服务 (APNs)
+  - DST-PORT,5228  # Google Play/Chrome同步/FCM
+  - DST-PORT,14000 # EA/Origin服务
+
+  # === DPI防检测, 捕获操作系统和应用连接测试 ===
+  - DOMAIN-SUFFIX,api.miwifi.com          # 小米路由器连接和状态上报
+  - DOMAIN-SUFFIX,msftconnecttest.com     # Windows 10+ 连接测试
+  - DOMAIN-SUFFIX,msftncsi.com          # Windows 7/8 连接测试 (NCSI)
+  - DOMAIN-SUFFIX,connectivitycheck.gstatic.com # Google/Android 连接测试

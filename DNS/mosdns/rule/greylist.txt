@@ -1,0 +1,4 @@
+# MosDNS Rules
+# browserleaks.com
+# ipleak.net
+# dnscheck.tools

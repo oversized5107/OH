@@ -1,0 +1,79 @@
+plugins:
+  ################## 数据源 ################
+  - tag: geoip_private # 私网 ip
+    type: ip_set
+    args:
+      files:
+        - "/var/mosdns/geoip_private.txt"
+
+  - tag: geoip_cn # cn ip
+    type: ip_set
+    args:
+      files:
+        - "/var/mosdns/geoip_cn.txt"
+  ####################################################################################
+  - tag: blocklist
+    type: domain_set
+    args:
+      files:
+        - "/etc/mosdns/rule/blocklist.txt"
+  
+  - tag: geosite_global # gfw 域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_category-games-!cn.txt"
+        - "/var/mosdns/geosite_category-scholar-!cn.txt"
+        - "/var/mosdns/geosite_category-social-media-!cn.txt"
+        - "/var/mosdns/geosite_alibaba@!cn.txt"
+        - "/var/mosdns/geosite_bytedance@!cn.txt"
+        - "/var/mosdns/geosite_bilibili@!cn.txt"
+        - "/var/mosdns/geosite_jd@!cn.txt"
+        - "/var/mosdns/geosite_icloud@!cn.txt"
+        - "/etc/mosdns/rule/greylist.txt"
+
+  - tag: geosite_near_cn
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_category-entertainment-cn.txt"
+        - "/var/mosdns/geosite_category-game-accelerator-cn.txt"
+        - "/var/mosdns/geosite_category-games-cn.txt"
+        - "/var/mosdns/geosite_category-media-cn.txt"
+        - "/var/mosdns/geosite_category-mooc-cn.txt"
+        - "/var/mosdns/geosite_category-netdisk-cn.txt"
+        - "/var/mosdns/geosite_category-scholar-cn.txt"
+        - "/var/mosdns/geosite_category-social-media-cn.txt"
+        - "/var/mosdns/geosite_category-speedtest@cn.txt"
+        - "/var/mosdns/geosite_alibaba.txt"
+        - "/var/mosdns/geosite_bytedance.txt"
+        - "/var/mosdns/geosite_jd.txt"
+        - "/var/mosdns/geosite_icloud.txt"
+
+  - tag: geosite_cn # cn 域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_apple-cn.txt"
+        - "/var/mosdns/geosite_google-cn.txt"
+        - "/var/mosdns/geosite_tld-cn.txt"
+        - "/var/mosdns/geosite_cn.txt"
+        - "/etc/mosdns/rule/whitelist.txt"
+        
+  - tag: ddns   # ddns 域名
+    type: domain_set
+    args:
+      files:
+        - "/etc/mosdns/rule/ddnslist.txt"
+
+  - tag: hosts  # hosts 域名
+    type: hosts
+    args:
+      files:
+        - "/etc/mosdns/rule/hosts.txt"
+
+  - tag: geosite_ads-all # 广告域名
+    type: domain_set
+    args:
+      files:
+        - "/var/mosdns/geosite_category-ads-all.txt"

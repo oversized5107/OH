@@ -1,0 +1,98 @@
+plugins:
+  ####################################################################################
+  ###############输出日志，dns查询###################
+  - tag: dns_near_seq
+    type: sequence
+    args:
+      - exec: query_summary dns_near
+      - exec: $dns_near
+  - tag: dns_cn_seq
+    type: sequence
+    args:
+      - exec: query_summary dns_cn
+      - exec: $dns_cn
+  - tag: dns_global_seq
+    type: sequence
+    args:
+      - exec: query_summary dns_global
+      - exec: $dns_global
+  - tag: fallback_seq # 其他特殊情况统一使用 dns_global 处理
+    type: sequence
+    args:
+      - exec: query_summary dns_fallback
+      - exec: $dns_global
+  ##################################################
+  # query near 域名
+  - tag: query_near
+    type: sequence
+    args:
+      - exec: $ecs_cn
+      - exec: $dns_near_seq
+      - matches: "!resp_ip $geoip_cn" # 响应非 cn ip
+        exec: drop_resp # 丢弃
+  # query cn 域名
+  - tag: query_cn
+    type: sequence
+    args:
+      - exec: $ecs_cn
+      - exec: $dns_cn_seq
+      - matches: "!resp_ip $geoip_cn" # 响应非 cn ip
+        exec: drop_resp # 丢弃
+  # query global 域名
+  - tag: query_global
+    type: sequence
+    args:
+      - exec: $no_ecs
+      - exec: $dns_global_seq
+      - matches: "resp_ip $geoip_cn" # 响应为 cn ip
+        exec: drop_resp # 丢弃
+  # query fallback
+  - tag: query_fallback
+    type: sequence
+    args:
+      - exec: $no_ecs
+      - exec: $fallback_seq
+  ##################################################
+  - tag: main_handle
+    type: sequence
+    args:
+      - exec: $ttl_10m # ttl 10min
+      - exec: accept # 接受响应,终止流程
+  # main_sequence 结果处理
+  - tag: has_resp_main
+    type: sequence
+    args:
+      - matches: has_resp
+        exec: goto main_handle
+  ##################################################
+  # main_sequence
+  - tag: main_sequence
+    type: sequence
+    args:
+      - matches: qname $blocklist
+        exec: $reject_3
+      - exec: prefer_ipv4
+
+      # 动态域名跳过缓存
+      - matches: qname $ddns
+        exec: $query_fallback
+
+      # - exec: $cache_wan
+      # - exec: jump has_resp_main
+
+      - matches: qname $geosite_global
+        exec: $dns_global
+      - exec: jump has_resp_main
+      
+      - matches: qname $geosite_near_cn
+        exec: $query_near
+      - exec: jump has_resp_main
+
+      - matches: qname $geosite_cn
+        exec: $query_cn
+      - exec: jump has_resp_main
+
+      # 其他
+      - exec: $query_fallback
+      - exec: jump has_resp_main
+  ####################################################################################
