@@ -1,0 +1,76 @@
+plugins:
+  ####################################################################################
+  - tag: reject_qtype65
+    type: sequence
+    args:
+      - exec: query_summary reject_qtype65
+      - exec: $reject_3
+
+  - tag: reject_null_domain
+    type: sequence
+    args:
+      - exec: query_summary reject_null_domain
+      - exec: $reject_3
+
+  - tag: reject_ad
+    type: sequence
+    args:
+      - exec: query_summary reject_adlist
+      - exec: $reject_3
+  ##################################################
+  - tag: other_seq # pre其他特殊情况统一使用 dns_global 处理
+    type: sequence
+    args:
+      - exec: query_summary pre_other
+      - exec: $dns_global
+  - tag: local_seq
+    type: sequence
+    args:
+      - exec: query_summary pre_local
+      - exec: $local
+  ##################################################
+  # pre其他所有情况
+  - tag: query_other 
+    type: sequence
+    args:
+      # - exec: $no_ecs
+      - exec: $other_seq
+  # query lan
+  - tag: query_lan
+    type: sequence
+    args:
+      - exec: $cache_lan
+      - matches: has_resp # 命中了 lan cache
+        exec: return
+      - exec: $local_seq
+  ##################################################
+  - tag: pre_handle
+    type: sequence
+    args:
+      - exec: $ttl_1h # ttl 1h
+      - exec: accept # 接受响应,终止流程
+  # pre_sequence 结果处理 
+  - tag: has_resp_pre
+    type: sequence
+    args:
+      - matches: has_resp # 如果 pre 序列已有响应
+        exec: goto pre_handle
+  ##################################################
+  # pre_sequence
+  - tag: pre_sequence
+    type: sequence
+    args:
+      - exec: $hosts
+      - exec: jump has_resp_pre
+      - matches: qtype 65 # TYPE 65 类型|DNS服务器状态
+        exec: $reject_qtype65
+      - matches: "qname keyword::" # 无效域名
+        exec: $reject_null_domain
+      - matches: qtype 12 # TYPE 12 类型|反查域名 PTR 记录
+        exec: $query_lan
+      - matches: qtype 255 # TYPE 255 类型|DNS服务器拓展支持
+        exec: $query_other
+      - matches: ptr_ip $geoip_private # private ip
+        exec: $query_lan
+      - exec: jump has_resp_pre
+  ####################################################################################
