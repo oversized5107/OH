@@ -56,7 +56,6 @@ payload:
 
   # 学术工具与服务 (服务器在境外，代理可显著提升速度和体验)
   - DOMAIN-SUFFIX,altmetric.com # 论文影响力追踪
-  - DOMAIN-SUFFIX,clarivate.com # Web of Science 的公司官网
   - DOMAIN-SUFFIX,deepl.com # 高质量翻译工具
   - DOMAIN-SUFFIX,deepdyve.com # 文献租赁服务
   - DOMAIN-SUFFIX,endnote.com # 文献管理工具
