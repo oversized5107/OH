@@ -1,0 +1,7 @@
+payload:
+# 国内 443 端口，使用 DIRECT 或 ua3f 
+# --------------------------------------------------------------------------------------#
+  - AND,((GEOSITE,apple@cn),(DST-PORT,443))
+  - AND,((GEOSITE,icloud@cn),(DST-PORT,443))
+  - AND,((RULE-SET,direct),(DST-PORT,443))
+  - AND,((RULE-SET,cncidr),(DST-PORT,443))
