@@ -1,0 +1,1233 @@
+#================================================
+#               OpenClash 配置文件
+#================================================
+
+#--------------------------------
+# OpenClash 覆写设置
+#--------------------------------
+# ruby_edit "$CONFIG_FILE" "['keep-alive-interval']" "1800"
+# ruby_edit "$CONFIG_FILE" "['keep-alive-idle']" "600"
+# ruby_edit "$CONFIG_FILE" "['external-ui']" "\"/etc/openclash/ui\""
+# ruby_edit "$CONFIG_FILE" "['external-ui-name']" "\"zashboard\""
+# ruby_edit "$CONFIG_FILE" "['external-ui-url']" "\"https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip\""
+
+#================================
+# 基础网络配置
+#================================
+port: 7890                    # HTTP 代理端口
+socks-port: 7891              # SOCKS5 代理端口
+redir-port: 7892              # 透明代理端口
+mixed-port: 7893              # 混合代理端口
+tproxy-port: 7895             # TProxy 端口
+
+allow-lan: true               # 允许局域网连接
+mode: rule                    # 运行模式
+log-level: warning            # 日志级别
+ipv6: false                   # 禁用 IPv6
+
+#================================
+# 高级功能配置
+#================================
+keep-alive-interval: 1800
+keep-alive-idle: 600
+find-process-mode: 'off'
+
+external-controller: 127.0.0.1:9090
+# external-ui: "/etc/openclash/ui"
+# external-ui-name: zashboard
+# external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download/dist-cdn-fonts.zip
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+unified-delay: true
+tcp-concurrent: true
+global-client-fingerprint: random
+
+geodata-mode: true
+geodata-loader: memconservative
+geo-auto-update: true
+geo-update-interval: 168  #更新间隔，单位为小时
+geox-url:
+  # mmdb: "https://testingcf.jsdelivr.net/gh/Loyalsoldier/geoip@release/Country.mmdb"
+  # asn: "https://testingcf.jsdelivr.net/gh/Loyalsoldier/geoip@release/GeoLite2-ASN.mmdb"
+  geoip: "https://testingcf.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/geoip.dat"
+  geosite: "https://testingcf.jsdelivr.net/gh/Loyalsoldier/v2ray-rules-dat@release/geosite.dat"
+
+global-ua: FFF
+
+#================================
+# Tun 配置
+#================================
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  device: utun-mihomo
+  strict-route: true
+  endpoint-independent-nat: true
+
+#================================
+# DNS 配置
+#================================
+bootstrap_dns_servers: &bootstrap_dns_servers
+  - quic://223.5.5.5
+  - quic://223.6.6.6
+  - tls://223.5.5.5
+  - tls://223.6.6.6
+  - tls://1.12.12.12
+  - tls://8.8.4.4:853#dns
+  - udp://8.8.8.8
+  - udp://8.8.4.4
+global_dns_servers: &global_dns_servers
+  - https://1.1.1.1/dns-query#dns
+  - tls://1dot1dot1dot1.cloudflare-dns.com#dns
+  - https://dns.google/dns-query#dns
+  - tls://dns.google#dns
+cn_dns_servers: &cn_dns_servers
+  - quic://dns.alidns.com
+  - https://dns.alidns.com/dns-query
+  - tls://dns.alidns.com
+  - https://doh.pub/dns-query
+  - tls://doh.pub
+cn1_dns_servers: &cn1_dns_servers
+  - udp://202.114.176.10
+  - udp://202.114.176.11
+  - quic://223.5.5.5
+  - tls://223.6.6.6
+dns:
+  enable: true
+  ipv6: false
+  use-hosts: true
+  use-system-hosts: true
+  enhanced-mode: redir-host
+  listen: 0.0.0.0:7874
+  cache-algorithm: arc
+  # prefer-h3: true
+  respect-rules: true
+  default-nameserver:
+    - quic://223.5.5.5
+    - quic://223.6.6.6
+    - tls://223.5.5.5
+    - tls://223.6.6.6
+    - tls://1.12.12.12
+    - tls://8.8.4.4:853#dns
+    - udp://8.8.8.8
+    - udp://8.8.4.4
+    - udp://202.114.176.10
+    - udp://202.114.176.11
+  nameserver: *global_dns_servers
+  nameserver-policy:
+    'geosite:cn,category-games-cn':
+      - udp://202.114.176.10
+      - udp://202.114.176.11
+      - quic://dns.alidns.com
+      - https://dns.alidns.com/dns-query
+      - tls://dns.alidns.com
+      - https://doh.pub/dns-query
+      - tls://doh.pub
+  proxy-server-nameserver: *cn_dns_servers
+
+#================================
+# 流量嗅探配置
+#================================
+sniffer:
+  enable: true
+  override-destination: true
+  sniff:
+    QUIC:
+      ports: [443]
+    TLS:
+      ports: [443, 8443]
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+  force-domain: ["+.netflix.com", "+.nflxvideo.net", "+.amazonaws.com", "+.media.dssott.com"]
+  skip-domain: ["+.apple.com", "Mijia Cloud", "dlg.io.mi.com", "+.oray.com", "+.sunlogin.net", "+.push.apple.com"]
+  force-dns-mapping: true
+  parse-pure-ip: true
+
+#================================
+# 代理提供商配置
+#================================
+# 代理提供商通用模板
+providers_template: &providers_template
+  type: http
+  interval: 18000
+  exclude-type: "socks5|http"
+  header:
+    User-Agent:
+    - "mihomo/1.18.3"
+
+#================================
+# 代理组配置模板与锚点
+#================================
+auto_select: &auto_select
+  type: url-test
+  interval: 300
+  tolerance: 50
+  url: https://cp.cloudflare.com
+  timeout: 5000
+  max-failed-times: 5
+
+# --- 定义两种核心选择器模板 ---
+global_proxy_groups: &global_proxy_groups
+  type: select
+  proxies:
+    - '🔰选择节点'
+    - '♻️自动选择'
+    - 'DIRECT'
+    - '🤖OpenAI节点'
+    - '🤖Gemini节点'
+    - '🎥奈飞节点'
+    - '🇭🇰香港-自动'
+    - '🇹🇼台湾-自动'
+    - '🇯🇵日本-自动'
+    - '🇺🇸美国-自动'
+    - '🇸🇬新加坡-自动'
+    - '🇰🇷韩国-自动'
+    - '🇨🇦加拿大-自动'
+    - '🇬🇧英国-自动'
+    - '🇫🇷法国-自动'
+    - '🇩🇪德国-自动'
+    - '🇳🇱荷兰-自动'
+    - '🇹🇷土耳其-自动'
+  include-all: true
+
+direct_proxy_groups: &direct_proxy_groups
+  type: select
+  proxies:
+    - 'DIRECT'
+    - '🔰选择节点'
+    - '♻️自动选择'
+    - '🤖OpenAI节点'
+    - '🤖Gemini节点'
+    - '🎥奈飞节点'
+    - '🇭🇰香港-自动'
+    - '🇹🇼台湾-自动'
+    - '🇯🇵日本-自动'
+    - '🇺🇸美国-自动'
+    - '🇸🇬新加坡-自动'
+    - '🇰🇷韩国-自动'
+    - '🇨🇦加拿大-自动'
+    - '🇬🇧英国-自动'
+    - '🇫🇷法国-自动'
+    - '🇩🇪德国-自动'
+    - '🇳🇱荷兰-自动'
+    - '🇹🇷土耳其-自动'
+  include-all: true
+#-------------------------------- 锚点定义 --------------------------------#
+hk_filter: &hk_filter '(?i)港|HK|hk|Hong Kong|HongKong|hongkong|深港'
+us_filter: &us_filter '(?i)美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States|UnitedStates'
+jp_filter: &jp_filter '(?i)日本|川日|东京|大阪|泉日|埼玉|沪日|深日|(?<!尼|-)日|JP|Japan|🇯🇵'
+sg_filter: &sg_filter '(?i)新加坡|坡|狮城|SG|Singapore'
+tw_filter: &tw_filter '(?i)台|新北|彰化|TW|Taiwan'
+kr_filter: &kr_filter '(?i)KR|Korea|KOR|首尔|韩|韓'
+ca_filter: &ca_filter '(?i)加拿大|Canada|渥太华|温哥华|卡尔加里'
+gb_filter: &gb_filter '(?i)英国|Britain|United Kingdom|England|伦敦'
+fr_filter: &fr_filter '(?i)法国|France|巴黎'
+de_filter: &de_filter '(?i)德国|Germany|柏林|法兰克福'
+nl_filter: &nl_filter '(?i)荷兰|Netherlands|阿姆斯特丹'
+tr_filter: &tr_filter '(?i)土耳其|Turkey|Türkiye'
+#================================
+# 代理组定义
+#================================
+proxy-groups:
+#-------------------------------- 核心策略分组 --------------------------------#
+  - name: "🔰选择节点"
+    type: select
+    proxies:
+      - '♻️自动选择'
+      - 'DIRECT'
+      - '🤖OpenAI节点'
+      - '🤖Gemini节点'
+      - '🎥奈飞节点'
+      - '🇭🇰香港-自动'
+      - '🇹🇼台湾-自动'
+      - '🇯🇵日本-自动'
+      - '🇺🇸美国-自动'
+      - '🇸🇬新加坡-自动'
+      - '🇰🇷韩国-自动'
+      - '🇨🇦加拿大-自动'
+      - '🇬🇧英国-自动'
+      - '🇫🇷法国-自动'
+      - '🇩🇪德国-自动'
+      - '🇳🇱荷兰-自动'
+      - '🇹🇷土耳其-自动'
+    include-all: true
+#-------------------------------- 规则策略分组 --------------------------------#
+  - name: "🎈谷歌服务"
+    <<: *global_proxy_groups
+  - name: "🎈微软服务"
+    <<: *global_proxy_groups
+  - name: "🍎Apple服务"
+    <<: *global_proxy_groups
+  - name: "📁国外云盘"
+    <<: *global_proxy_groups
+  - name: "🤖AI服务"
+    <<: *global_proxy_groups
+  - name: "🎮Steam登录/下载"
+    <<: *direct_proxy_groups
+  - name: "🎮游戏平台"
+    <<: *global_proxy_groups
+  - name: "📹YouTube"
+    <<: *global_proxy_groups
+  - name: "🎥奈飞视频"
+    <<: *global_proxy_groups
+  - name: "📷Tiktok"
+    <<: *global_proxy_groups
+  - name: "📕学术网站"
+    <<: *direct_proxy_groups
+  - name: "📺国际媒体"
+    <<: *global_proxy_groups
+  - name: "📲Telegram"
+    <<: *global_proxy_groups
+  - name: "🐟Docker"
+    <<: *global_proxy_groups
+  - name: "🌩️Cloudflare"
+    <<: *global_proxy_groups
+  - name: "🇨🇳国内网站"
+    <<: *direct_proxy_groups
+  - name: "🛑拦截广告"
+    type: select
+    proxies: ['REJECT', 'DIRECT']
+  - name: "🐟漏网之鱼"
+    <<: *global_proxy_groups
+#-------------------------------- 特殊策略分组 --------------------------------#
+  - name: 🤖OpenAI节点
+    type: url-test
+    include-all: true
+    interval: 600
+    filter: '(?i)OpenAI|ChatGPT|GPT'
+  - name: 🤖Gemini节点
+    type: url-test
+    include-all: true
+    interval: 600
+    filter: '(?i)Gemini|BardAI|GoogleAI|Google AI|GM'
+  - name: 🎥奈飞节点
+    type: url-test
+    include-all: true
+    interval: 600
+    filter: '(?i)NF|奈飞|解锁|Netflix|NETFLIX|Media|D+|Disney|Prime'
+#-------------------------------- 隐藏策略分组 --------------------------------#
+  - name: ♻️自动选择
+    <<: *auto_select
+    include-all: true
+    hidden: true
+  - name: dns
+    type: select
+    proxies: ['🔰选择节点']
+    hidden: true
+# --- 香港 ---
+  - name: 🇭🇰香港-自动
+    <<: *auto_select
+    include-all: true
+    filter: *hk_filter
+    hidden: true
+# --- 台湾 ---
+  - name: 🇹🇼台湾-自动
+    <<: *auto_select
+    include-all: true
+    filter: *tw_filter
+    hidden: true
+# --- 日本 ---
+  - name: 🇯🇵日本-自动
+    <<: *auto_select
+    include-all: true
+    filter: *jp_filter
+    hidden: true
+# --- 美国 ---
+  - name: 🇺🇸美国-自动
+    <<: *auto_select
+    include-all: true
+    filter: *us_filter
+    hidden: true
+# --- 新加坡 ---
+  - name: 🇸🇬新加坡-自动
+    <<: *auto_select
+    include-all: true
+    filter: *sg_filter
+    hidden: true
+# --- 韩国 ---
+  - name: 🇰🇷韩国-自动
+    <<: *auto_select
+    include-all: true
+    filter: *kr_filter
+    hidden: true
+# --- 加拿大 ---
+  - name: 🇨🇦加拿大-自动
+    <<: *auto_select
+    include-all: true
+    filter: *ca_filter
+    hidden: true
+# --- 英国 ---
+  - name: 🇬🇧英国-自动
+    <<: *auto_select
+    include-all: true
+    filter: *gb_filter
+    hidden: true
+# --- 法国 ---
+  - name: 🇫🇷法国-自动
+    <<: *auto_select
+    include-all: true
+    filter: *fr_filter
+    hidden: true
+# --- 德国 ---
+  - name: 🇩🇪德国-自动
+    <<: *auto_select
+    include-all: true
+    filter: *de_filter
+    hidden: true
+# --- 荷兰 ---
+  - name: 🇳🇱荷兰-自动
+    <<: *auto_select
+    include-all: true
+    filter: *nl_filter
+    hidden: true
+# --- 土耳其 ---
+  - name: 🇹🇷土耳其-自动
+    <<: *auto_select
+    include-all: true
+    filter: *tr_filter
+    hidden: true
+#================================
+# 路由规则
+#================================
+rules:
+  # --------------------自定义规则--------------------
+  - PROCESS-NAME,ua3f,DIRECT
+  - RULE-SET,my_rules_proxy,🔰选择节点
+  - RULE-SET,my_rules_direct,DIRECT
+  # --------------------局域网和广告拦截--------------------
+  # 局域网和私有地址直连
+  - RULE-SET,private,DIRECT
+  - RULE-SET,lancidr,DIRECT
+  - GEOIP,LAN,DIRECT
+  # 广告拦截
+  # - RULE-SET,UnBan,🇨🇳国内网站                     #  Unbreak 白名单 不应该被广告链接的网站
+  # - RULE-SET,reject,🛑拦截广告
+  # --------------------国内服务--------------------
+  - RULE-SET,direct,🇨🇳国内网站
+  - RULE-SET,cncidr,🇨🇳国内网站,no-resolve
+  - GEOIP,CN,🇨🇳国内网站,no-resolve
+  # --------------------国外主要平台--------------------
+  # 学术期刊
+  - RULE-SET,my_scholar_proxy,🔰选择节点
+  - RULE-SET,GlobalScholar,📕学术网站
+  # 各大国外云盘
+  - RULE-SET,Dropbox,📁国外云盘
+  - RULE-SET,Dubox,📁国外云盘
+  - RULE-SET,TeraBox,📁国外云盘
+  - RULE-SET,PikPak,📁国外云盘
+  - RULE-SET,MEGA,📁国外云盘
+  # AI 服务
+  - RULE-SET,OpenAI,🤖AI服务
+  - RULE-SET,Claude,🤖AI服务
+  - RULE-SET,Anthropic,🤖AI服务
+  # Google
+  - RULE-SET,BardAI,🤖AI服务
+  - RULE-SET,Gemini,🤖AI服务
+  - RULE-SET,GoogleDrive,📁国外云盘
+  - RULE-SET,YouTube,📹YouTube
+  - RULE-SET,YouTubeMusic,📹YouTube
+  - RULE-SET,GoogleFCM,🎈谷歌服务
+  - RULE-SET,Google,🎈谷歌服务
+  # Microsoft
+  - RULE-SET,Copilot,🤖AI服务
+  - RULE-SET,OneDrive,📁国外云盘
+  - RULE-SET,Microsoft,🎈微软服务
+  # Apple
+  - RULE-SET,AppleMusic,🍎Apple服务
+  - RULE-SET,AppleTV,🍎Apple服务
+  - RULE-SET,apple-cn,🇨🇳国内网站
+  - RULE-SET,icloud,🇨🇳国内网站
+  - RULE-SET,Apple_Classical,🍎Apple服务
+  # 国际媒体
+  - RULE-SET,Netflix,🎥奈飞视频
+  - RULE-SET,TikTok,📷Tiktok
+  - RULE-SET,BiliBiliIntl,📺国际媒体
+  - RULE-SET,iQIYIIntl,📺国际媒体
+  - RULE-SET,WeTV,📺国际媒体
+  # 游戏平台
+  - RULE-SET,SteamCN,🎮Steam登录/下载
+  - RULE-SET,GameDownloadCN,🎮Steam登录/下载
+  - RULE-SET,Origin,🎮游戏平台
+  - RULE-SET,Sony,🎮游戏平台
+  - RULE-SET,Game,🎮游戏平台
+  # 其他平台
+  - RULE-SET,telegramcidr,📲Telegram
+  - RULE-SET,Docker,🐟Docker
+  - RULE-SET,Cloudflare,🌩️Cloudflare
+  # ----------------------其他规则----------------------
+  # 🌏GlobalMedia
+  - RULE-SET,Disney,📺国际媒体
+  - RULE-SET,Spotify,📺国际媒体
+  - RULE-SET,Niconico,📺国际媒体
+  - RULE-SET,BBC,📺国际媒体
+  - RULE-SET,AsianMedia,📺国际媒体
+  - RULE-SET,Bahamut,📺国际媒体
+  - RULE-SET,Hulu,📺国际媒体
+  - RULE-SET,PandoraTV,📺国际媒体
+  - RULE-SET,TVB,📺国际媒体
+  - RULE-SET,HBOHK,📺国际媒体
+  - RULE-SET,HBOUSA,📺国际媒体
+  - RULE-SET,HuluJP,📺国际媒体
+  - RULE-SET,HuluUSA,📺国际媒体
+  - RULE-SET,FOXNOW,📺国际媒体
+  - RULE-SET,FOXPlus,📺国际媒体
+  - RULE-SET,KKTV,📺国际媒体
+  - RULE-SET,NaverTV,📺国际媒体
+  - RULE-SET,NowE,📺国际媒体
+  - RULE-SET,ParamountPlus,📺国际媒体
+  - RULE-SET,PrimeVideo,📺国际媒体
+  - RULE-SET,TVer,📺国际媒体
+  - RULE-SET,myTVSUPER,📺国际媒体
+  - RULE-SET,HBOAsia,📺国际媒体
+  - RULE-SET,DiscoveryPlus,📺国际媒体
+  - RULE-SET,Overcast,📺国际媒体
+  - RULE-SET,Peacock,📺国际媒体
+  - RULE-SET,Cake,📺国际媒体
+  - RULE-SET,BritboxUK,📺国际媒体
+  - RULE-SET,HKOpenTV,📺国际媒体
+  - RULE-SET,Abema,📺国际媒体
+  - RULE-SET,Acplay,📺国际媒体
+  - RULE-SET,UKMedia,📺国际媒体
+  - RULE-SET,USMedia,📺国际媒体
+  # 其他媒体
+  - RULE-SET,AmazonPrimeVideo,📺国际媒体
+  - RULE-SET,Twitch,📺国际媒体
+  - RULE-SET,DAZN,📺国际媒体
+  - RULE-SET,AbemaTV,📺国际媒体
+  - RULE-SET,Fox,📺国际媒体
+  - RULE-SET,HamiVideo,📺国际媒体
+  - RULE-SET,LineTV,📺国际媒体
+  - RULE-SET,Viki,📺国际媒体
+  - RULE-SET,Vimeo,📺国际媒体
+  - RULE-SET,TIDAL,📺国际媒体
+  - RULE-SET,Deezer,📺国际媒体
+  - RULE-SET,JOOX,📺国际媒体
+  - RULE-SET,KKBOX,📺国际媒体
+  - RULE-SET,SoundCloud,📺国际媒体
+  - RULE-SET,LastFM,📺国际媒体
+  - RULE-SET,MOOV,📺国际媒体
+  # --------------------其他流量和最终规则--------------------
+  - RULE-SET,proxy,🔰选择节点
+  - NETWORK,udp,🐟漏网之鱼
+  - MATCH,🐟漏网之鱼
+#================================
+# 规则集提供者
+#================================
+rule-providers:
+#--------------------------------------------------------------------------------------#
+#  自定义规则
+  # my_dpi:
+  #   url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_dpi.yaml
+  #   path: ./ruleset/my_dpi.yaml
+  #   behavior: classical
+  #   interval: 86400
+  #   type: http
+  my_rules_direct:
+    url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_rules_direct.yaml
+    path: ./ruleset/my_rules_direct.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  my_rules_proxy:
+    url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_rules_proxy.yaml
+    path: ./ruleset/my_rules_proxy.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # my_tencent:
+  #   url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_tencent.yaml
+  #   path: ./ruleset/my_tencent.yaml
+  #   behavior: classical
+  #   interval: 86400
+  #   type: http
+  # my_cn443:
+  #   url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_cn443.yaml
+  #   path: ./ruleset/my_cn443.yaml
+  #   behavior: classical
+  #   interval: 86400
+  #   type: http
+  # my_scholar_direct:
+  #   url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_scholar_direct.yaml
+  #   path: ./ruleset/my_scholar_direct.yaml
+  #   behavior: classical
+  #   interval: 86400
+  #   type: http
+  my_scholar_proxy:
+    url: https://testingcf.jsdelivr.net/gh/oversized5107/OH@main/rules/my_scholar_proxy.yaml
+    path: ./ruleset/my_scholar_proxy.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+#---------------------------------------------------------------------------------------------------------------------------#
+  # rules from https://github.com/Loyalsoldier/clash-rules
+  # 广告域名列表
+  # reject:
+  #   url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt
+  #   path: ./ruleset/Loyalsoldier_reject.yaml
+  #   behavior: domain
+  #   interval: 86400
+  #   type: http
+  # iCloud 域名列表
+  icloud:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/icloud.txt
+    path: ./ruleset/Loyalsoldier_icloud.yaml
+    behavior: domain
+    interval: 86400
+    type: http
+  # Apple 在中国大陆可直连的域名列表
+  apple-cn:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/apple.txt
+    path: ./ruleset/Loyalsoldier_apple-cn.yaml
+    behavior: domain
+    interval: 86400
+    type: http
+  # [慎用]Google 在中国大陆可直连的域名列表
+  # google-cn:
+  #   url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/google.txt
+  #   path: ./ruleset/Loyalsoldier_google-cn.yaml
+  #   behavior: domain
+  #   interval: 86400
+  #   type: http
+  # 代理域名列表
+  proxy:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt
+    path: ./ruleset/Loyalsoldier_proxy.yaml
+    behavior: domain
+    interval: 86400
+    type: http
+  # 直连域名列表
+  direct:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+    path: ./ruleset/Loyalsoldier_direct.yaml
+    behavior: domain
+    interval: 86400
+    type: http
+  # 私有网络专用域名列表
+  private:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt
+    path: ./ruleset/Loyalsoldier_private.yaml
+    behavior: domain
+    interval: 86400
+    type: http
+  # GFWList 域名列表
+  # gfw:
+  #   url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt
+  #   path: ./ruleset/Loyalsoldier_gfw.yaml
+  #   behavior: domain
+  #   interval: 86400
+  #   type: http
+  # 非中国大陆使用的顶级域名列表
+  # tld-not-cn:
+  #   url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt
+  #   path: ./ruleset/Loyalsoldier_tld-not-cn.yaml
+  #   behavior: domain
+  #   interval: 86400
+  #   type: http
+  # Telegram 使用的 IP 地址列表
+  telegramcidr:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt
+    path: ./ruleset/Loyalsoldier_telegramcidr.yaml
+    behavior: ipcidr
+    interval: 86400
+    type: http
+  # 中国大陆 IP 地址列表
+  cncidr:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+    path: ./ruleset/Loyalsoldier_cncidr.yaml
+    behavior: ipcidr
+    interval: 86400
+    type: http
+  # 局域网 IP 及保留 IP 地址列表
+  lancidr:
+    url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt
+    path: ./ruleset/Loyalsoldier_lancidr.yaml
+    behavior: ipcidr
+    interval: 86400
+    type: http
+  # 需要直连的常见软件列表
+  # applications:
+  #   url: https://testingcf.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/applications.txt
+  #   path: ./ruleset/Loyalsoldier_applications.yaml
+  #   behavior: classical
+  #   interval: 86400
+  #   type: http
+  #--------------------------------------------------------------------------------------#
+  # rules from https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Clash
+  # 学术期刊
+  GlobalScholar:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GlobalScholar/GlobalScholar.yaml
+    path: ./ruleset/blackmatrix7_GlobalScholar.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # 各大国外云盘
+  Dropbox:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Dropbox/Dropbox.yaml
+    path: ./ruleset/blackmatrix7_Dropbox.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Dubox:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Dubox/Dubox.yaml
+    path: ./ruleset/blackmatrix7_Dubox.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  TeraBox:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TeraBox/TeraBox.yaml
+    path: ./ruleset/blackmatrix7_TeraBox.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  PikPak:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/PikPak/PikPak.yaml
+    path: ./ruleset/blackmatrix7_PikPak.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  MEGA:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/MEGA/MEGA.yaml
+    path: ./ruleset/blackmatrix7_MEGA.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # AI 服务
+  OpenAI:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/OpenAI/OpenAI.yaml
+    path: ./ruleset/blackmatrix7_OpenAI.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Claude:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Claude/Claude.yaml
+    path: ./ruleset/blackmatrix7_Claude.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Anthropic:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Anthropic/Anthropic.yaml
+    path: ./ruleset/blackmatrix7_Anthropic.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # Google
+  BardAI:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/BardAI/BardAI.yaml
+    path: ./ruleset/blackmatrix7_BardAI.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Gemini:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Gemini/Gemini.yaml
+    path: ./ruleset/blackmatrix7_Gemini.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  GoogleDrive:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GoogleDrive/GoogleDrive.yaml
+    path: ./ruleset/blackmatrix7_GoogleDrive.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  YouTube:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTube/YouTube.yaml
+    path: ./ruleset/blackmatrix7_YouTube.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  YouTubeMusic:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTubeMusic/YouTubeMusic.yaml
+    path: ./ruleset/blackmatrix7_YouTubeMusic.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  GoogleFCM:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/GoogleFCM/GoogleFCM.yaml
+    path: ./ruleset/blackmatrix7_GoogleFCM.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Google:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Google/Google.yaml
+    path: ./ruleset/blackmatrix7_Google.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # Microsoft
+  Copilot:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Copilot/Copilot.yaml
+    path: ./ruleset/blackmatrix7_Copilot.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  OneDrive:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/OneDrive/OneDrive.yaml
+    path: ./ruleset/blackmatrix7_OneDrive.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Microsoft:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Microsoft/Microsoft.yaml
+    path: ./ruleset/blackmatrix7_Microsoft.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # Apple
+  AppleMusic:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/AppleMusic/AppleMusic.yaml
+    path: ./ruleset/blackmatrix7_AppleMusic.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  AppleTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/AppleTV/AppleTV.yaml
+    path: ./ruleset/blackmatrix7_AppleTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Apple_Classical:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Apple/Apple_Classical.yaml
+    path: ./ruleset/blackmatrix7_Apple_Classical.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # 国际媒体
+  Netflix:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Netflix/Netflix.yaml
+    path: ./ruleset/blackmatrix7_Netflix.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  TikTok:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TikTok/TikTok.yaml
+    path: ./ruleset/blackmatrix7_TikTok.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  BiliBiliIntl:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/BiliBiliIntl/BiliBiliIntl.yaml
+    path: ./ruleset/blackmatrix7_BiliBiliIntl.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  iQIYIIntl:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/iQIYIIntl/iQIYIIntl.yaml
+    path: ./ruleset/blackmatrix7_iQIYIIntl.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  WeTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/WeTV/WeTV.yaml
+    path: ./ruleset/blackmatrix7_WeTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # 游戏平台
+  SteamCN:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/SteamCN/SteamCN.yaml
+    path: ./ruleset/blackmatrix7_SteamCN.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  GameDownloadCN:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Game/GameDownloadCN/GameDownloadCN.yaml
+    path: ./ruleset/blackmatrix7_GameDownloadCN.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Origin:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Origin/Origin.yaml
+    path: ./ruleset/blackmatrix7_Origin.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Sony:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Sony/Sony.yaml
+    path: ./ruleset/blackmatrix7_Sony.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Game:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Game/Game.yaml
+    path: ./ruleset/blackmatrix7_Game.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # 其他平台
+  Docker:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Docker/Docker.yaml
+    path: ./ruleset/blackmatrix7_Docker.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Cloudflare:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Cloudflare/Cloudflare.yaml
+    path: ./ruleset/blackmatrix7_Cloudflare.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # --------------------国内网站--------------------
+  # ChinaMax_Classical:
+  #   url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/ChinaMax/ChinaMax_Classical.yaml
+  #   path: ./ruleset/blackmatrix7_ChinaMax_Classical.yaml
+  #   behavior: classical
+  #   interval: 86400
+  #   type: http
+  # ----------------------其他规则----------------------
+  # 🌏GlobalMedia
+  Disney:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Disney/Disney.yaml
+    path: ./ruleset/blackmatrix7_Disney.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Spotify:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Spotify/Spotify.yaml
+    path: ./ruleset/blackmatrix7_Spotify.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Niconico:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Niconico/Niconico.yaml
+    path: ./ruleset/blackmatrix7_Niconico.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  BBC:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/BBC/BBC.yaml
+    path: ./ruleset/blackmatrix7_BBC.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  AsianMedia:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/AsianMedia/AsianMedia.yaml
+    path: ./ruleset/blackmatrix7_AsianMedia.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Bahamut:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Bahamut/Bahamut.yaml
+    path: ./ruleset/blackmatrix7_Bahamut.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Hulu:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Hulu/Hulu.yaml
+    path: ./ruleset/blackmatrix7_Hulu.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  PandoraTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/PandoraTV/PandoraTV.yaml
+    path: ./ruleset/blackmatrix7_PandoraTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  TVB:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TVB/TVB.yaml
+    path: ./ruleset/blackmatrix7_TVB.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HBOHK:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HBOHK/HBOHK.yaml
+    path: ./ruleset/blackmatrix7_HBOHK.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HBOUSA:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HBOUSA/HBOUSA.yaml
+    path: ./ruleset/blackmatrix7_HBOUSA.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HuluJP:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HuluJP/HuluJP.yaml
+    path: ./ruleset/blackmatrix7_HuluJP.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HuluUSA:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HuluUSA/HuluUSA.yaml
+    path: ./ruleset/blackmatrix7_HuluUSA.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  FOXNOW:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/FOXNOW/FOXNOW.yaml
+    path: ./ruleset/blackmatrix7_FOXNOW.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  FOXPlus:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/FOXPlus/FOXPlus.yaml
+    path: ./ruleset/blackmatrix7_FOXPlus.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  KKTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/KKTV/KKTV.yaml
+    path: ./ruleset/blackmatrix7_KKTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  NaverTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/NaverTV/NaverTV.yaml
+    path: ./ruleset/blackmatrix7_NaverTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  NowE:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/NowE/NowE.yaml
+    path: ./ruleset/blackmatrix7_NowE.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  ParamountPlus:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/ParamountPlus/ParamountPlus.yaml
+    path: ./ruleset/blackmatrix7_ParamountPlus.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  PrimeVideo:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/PrimeVideo/PrimeVideo.yaml
+    path: ./ruleset/blackmatrix7_PrimeVideo.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  TVer:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TVer/TVer.yaml
+    path: ./ruleset/blackmatrix7_TVer.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  myTVSUPER:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/myTVSUPER/myTVSUPER.yaml
+    path: ./ruleset/blackmatrix7_myTVSUPER.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HBOAsia:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HBOAsia/HBOAsia.yaml
+    path: ./ruleset/blackmatrix7_HBOAsia.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  DiscoveryPlus:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/DiscoveryPlus/DiscoveryPlus.yaml
+    path: ./ruleset/blackmatrix7_DiscoveryPlus.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Overcast:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Overcast/Overcast.yaml
+    path: ./ruleset/blackmatrix7_Overcast.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Peacock:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Peacock/Peacock.yaml
+    path: ./ruleset/blackmatrix7_Peacock.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Cake:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Cake/Cake.yaml
+    path: ./ruleset/blackmatrix7_Cake.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  BritboxUK:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/BritboxUK/BritboxUK.yaml
+    path: ./ruleset/blackmatrix7_BritboxUK.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HKOpenTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HKOpenTV/HKOpenTV.yaml
+    path: ./ruleset/blackmatrix7_HKOpenTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Abema:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Abema/Abema.yaml
+    path: ./ruleset/blackmatrix7_Abema.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Acplay:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Acplay/Acplay.yaml
+    path: ./ruleset/blackmatrix7_Acplay.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  UKMedia:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/UKMedia/UKMedia.yaml
+    path: ./ruleset/blackmatrix7_UKMedia.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  USMedia:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/USMedia/USMedia.yaml
+    path: ./ruleset/blackmatrix7_USMedia.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  # 其他媒体
+  AmazonPrimeVideo:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/AmazonPrimeVideo/AmazonPrimeVideo.yaml
+    path: ./ruleset/blackmatrix7_AmazonPrimeVideo.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Twitch:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Twitch/Twitch.yaml
+    path: ./ruleset/blackmatrix7_Twitch.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  DAZN:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/DAZN/DAZN.yaml
+    path: ./ruleset/blackmatrix7_DAZN.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  AbemaTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/AbemaTV/AbemaTV.yaml
+    path: ./ruleset/blackmatrix7_AbemaTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Fox:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Fox/Fox.yaml
+    path: ./ruleset/blackmatrix7_Fox.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  HamiVideo:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/HamiVideo/HamiVideo.yaml
+    path: ./ruleset/blackmatrix7_HamiVideo.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  LineTV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/LineTV/LineTV.yaml
+    path: ./ruleset/blackmatrix7_LineTV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Viki:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Viki/Viki.yaml
+    path: ./ruleset/blackmatrix7_Viki.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Vimeo:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Vimeo/Vimeo.yaml
+    path: ./ruleset/blackmatrix7_Vimeo.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  TIDAL:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TIDAL/TIDAL.yaml
+    path: ./ruleset/blackmatrix7_TIDAL.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  Deezer:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Deezer/Deezer.yaml
+    path: ./ruleset/blackmatrix7_Deezer.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  JOOX:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/JOOX/JOOX.yaml
+    path: ./ruleset/blackmatrix7_JOOX.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  KKBOX:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/KKBOX/KKBOX.yaml
+    path: ./ruleset/blackmatrix7_KKBOX.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  SoundCloud:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/SoundCloud/SoundCloud.yaml
+    path: ./ruleset/blackmatrix7_SoundCloud.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  LastFM:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/LastFM/LastFM.yaml
+    path: ./ruleset/blackmatrix7_LastFM.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+  MOOV:
+    url: https://testingcf.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/MOOV/MOOV.yaml
+    path: ./ruleset/blackmatrix7_MOOV.yaml
+    behavior: classical
+    interval: 86400
+    type: http
+#---------------------------------------------------------------------------------------------------------------------------#
+# rules from https://github.com/zsokami/ACL4SSR
+  # LocalAreaNetwork:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/LocalAreaNetwork.list
+  #   path: ./ruleset/LocalAreaNetwork.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http
+  # UnBan:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/UnBan.list
+  #   path: ./ruleset/UnBan.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http
+  # GoogleFCM:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Ruleset/GoogleFCM.list
+  #   path: ./ruleset/GoogleFCM.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http
+  # GoogleCN:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/GoogleCN.list
+  #   path: ./ruleset/GoogleCN.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http
+  # ChinaDomain:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaDomain.list
+  #   path: ./ruleset/ChinaDomain.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http
+  # ChinaCompanyIp:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/ChinaCompanyIp.list
+  #   path: ./ruleset/ChinaCompanyIp.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http
+  # Download:
+  #   url: https://testingcf.jsdelivr.net/gh/ACL4SSR/ACL4SSR@master/Clash/Download.list
+  #   path: ./ruleset/Download.list
+  #   behavior: classical
+  #   interval: 86400
+  #   format: text
+  #   type: http

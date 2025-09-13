@@ -1,0 +1,27 @@
+payload:
+# 使用 ua3f
+# -------------------------------------------------------------------------------#
+  - PROCESS-NAME,subs-check.exe
+  - PROCESS-NAME,subs-check
+# ------------------------------教育 IP-------------------------------------------#
+  - IP-CIDR,202.114.0.0/16,no-resolve
+# -------------------------------------------------------------------------------#
+  - DOMAIN,clash.razord.top
+  - DOMAIN,yacd.haishan.me
+  - DOMAIN,ua.233996.xyz
+# ------------------------------emby---------------------------------------------#
+  - DOMAIN-SUFFIX,micu.hk
+# ------------------------------DNS----------------------------------------------#
+  - DOMAIN,dns.alidns.com
+  - DOMAIN,doh.pub
+  - DOMAIN,dns.rubyfish.cn
+  - DOMAIN,rubyfish.cn
+  - DOMAIN,sm2.doh.pub
+  - IP-CIDR,114.114.114.114/32,no-resolve
+  - IP-CIDR,119.29.29.29/32,no-resolve
+  - IP-CIDR,223.5.5.5/32,no-resolve
+  - IP-CIDR,1.12.12.12/32,no-resolve
+# ------------------------------Easytier------------------------------------------#
+  - DST-PORT,11010
+  - DST-PORT,11011
+  - DST-PORT,11012
